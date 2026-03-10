@@ -12,24 +12,29 @@ A lightweight Python script to download full-resolution panoramic images from an
 ## Requirements
 
 - Python 3.7+
-- [requests](https://pypi.org/project/requests/) library
+- requests library
 
 Install dependencies:
 
-```bash
 pip install requests
 
-Usage
+## Usage
+
 python Kuula_Downloader.py <kuula_url> [output_dir]
 
-Supported URL Formats
-Format	Example
-Collection	https://kuula.co/share/XXXXX/collection/YYYYY
-Share link	https://kuula.co/share/XXXXX
-Post link	https://kuula.co/post/XXXXX
+## Supported URL Formats
 
-Output
-Images are saved as .jpg files named after their title (e.g. 01_Entrance.jpg, 02_Oval.jpg). If a post has no title, it falls back to 01_post_01.jpg.
+Format | Example
+-------|---------
+Collection | https://kuula.co/share/XXXXX/collection/YYYYY
+Share link | https://kuula.co/share/XXXXX
+Post link | https://kuula.co/post/XXXXX
 
-License
+## Output
+
+Images are saved as .jpg files named after their title (e.g. 01_Entrance.jpg, 02_Oval.jpg).
+If a post has no title, filenames fall back to 01_post_01.jpg, 02_post_02.jpg, etc.
+
+## License
+
 MIT
