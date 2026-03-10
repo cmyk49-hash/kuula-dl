@@ -2,4 +2,12 @@ panoramas/
 *.html
 __pycache__/
 *.pyc
+*.py[codz]
 .claude/
+.env
+.venv
+env/
+venv/
+*.egg-info/
+dist/
+build/
