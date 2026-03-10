@@ -63,11 +63,13 @@ if st.button("Download") and url:
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_STORED) as zf:
         for filename, data in images.items():
             zf.writestr(filename, data)
-    zip_buffer.seek(0)
 
+    st.session_state["zip_data"] = zip_buffer.getvalue()
+
+if "zip_data" in st.session_state:
     st.download_button(
         label="Download all as ZIP",
-        data=zip_buffer,
+        data=st.session_state["zip_data"],
         file_name="panoramas.zip",
         mime="application/zip",
     )
