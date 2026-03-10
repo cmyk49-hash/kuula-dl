@@ -5,7 +5,7 @@ import zipfile
 import requests
 import streamlit as st
 
-from Kuula_Downloader import decode_kuula_var, extract_posts, get_best_size
+from Kuula_Downloader import extract_posts, get_best_size
 
 CDN = "https://files.kuula.io"
 CDN2 = "https://d3gkeulpe5oq35.cloudfront.net"
@@ -39,28 +39,32 @@ if st.button("Download") and url:
 
     st.success(f"Found {len(posts)} panorama(s)")
 
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
-        for i, (name, uuid, sizes) in enumerate(posts, 1):
-            size = get_best_size(sizes) if sizes else "8192"
-            img_url = f"{CDN}/{uuid}/01-{size}.jpg"
+    images = {}
+    for i, (name, uuid, sizes) in enumerate(posts, 1):
+        size = get_best_size(sizes) if sizes else "8192"
+        img_url = f"{CDN}/{uuid}/01-{size}.jpg"
 
-            with st.spinner(f"[{i}/{len(posts)}] Downloading {name}..."):
+        with st.spinner(f"[{i}/{len(posts)}] Downloading {name}..."):
+            try:
+                r = requests.get(img_url, headers=HEADERS, timeout=60)
+                r.raise_for_status()
+            except Exception:
                 try:
-                    r = requests.get(img_url, headers=HEADERS, timeout=60)
+                    r = requests.get(f"{CDN2}/{uuid}/01-{size}.jpg", headers=HEADERS, timeout=60)
                     r.raise_for_status()
-                except Exception:
-                    try:
-                        r = requests.get(f"{CDN2}/{uuid}/01-{size}.jpg", headers=HEADERS, timeout=60)
-                        r.raise_for_status()
-                    except Exception as e:
-                        st.warning(f"Skipped {name}: {e}")
-                        continue
+                except Exception as e:
+                    st.warning(f"Skipped {name}: {e}")
+                    continue
 
-                zf.writestr(f"{name}.jpg", r.content)
-                st.write(f"✓ {name}")
+            images[f"{name}.jpg"] = r.content
+            st.write(f"✓ {name}")
 
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_STORED) as zf:
+        for filename, data in images.items():
+            zf.writestr(filename, data)
     zip_buffer.seek(0)
+
     st.download_button(
         label="Download all as ZIP",
         data=zip_buffer,
