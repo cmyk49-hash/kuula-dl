@@ -1,0 +1,5 @@
+panoramas/
+*.html
+__pycache__/
+*.pyc
+.claude/
