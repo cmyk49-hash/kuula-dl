@@ -1,6 +1,4 @@
-import io
 import re
-import zipfile
 
 import requests
 import streamlit as st
@@ -21,7 +19,7 @@ st.write("Paste any Kuula collection or post URL to download the panoramas.")
 
 url = st.text_input("Kuula URL", placeholder="https://kuula.co/post/XXXXX")
 
-if st.button("Download") and url:
+if st.button("Fetch") and url:
     url = re.sub(r'kuula\.co/post/([A-Za-z0-9]+)', r'kuula.co/share/\1', url)
 
     with st.spinner("Fetching page..."):
@@ -39,12 +37,11 @@ if st.button("Download") and url:
 
     st.success(f"Found {len(posts)} panorama(s)")
 
-    images = {}
     for i, (name, uuid, sizes) in enumerate(posts, 1):
         size = get_best_size(sizes) if sizes else "8192"
         img_url = f"{CDN}/{uuid}/01-{size}.jpg"
 
-        with st.spinner(f"[{i}/{len(posts)}] Downloading {name}..."):
+        with st.spinner(f"Downloading {name}..."):
             try:
                 r = requests.get(img_url, headers=HEADERS, timeout=60)
                 r.raise_for_status()
@@ -56,20 +53,10 @@ if st.button("Download") and url:
                     st.warning(f"Skipped {name}: {e}")
                     continue
 
-            images[f"{name}.jpg"] = r.content
-            st.write(f"✓ {name}")
-
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_STORED) as zf:
-        for filename, data in images.items():
-            zf.writestr(filename, data)
-
-    st.session_state["zip_data"] = zip_buffer.getvalue()
-
-if "zip_data" in st.session_state:
-    st.download_button(
-        label="Download all as ZIP",
-        data=st.session_state["zip_data"],
-        file_name="panoramas.zip",
-        mime="application/zip",
-    )
+        st.download_button(
+            label=f"Download {name}.jpg",
+            data=r.content,
+            file_name=f"{name}.jpg",
+            mime="image/jpeg",
+            key=f"dl_{i}",
+        )
